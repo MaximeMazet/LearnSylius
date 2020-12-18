@@ -132,7 +132,6 @@ RUN set -eux; \
 
 
 
-USER root
 # prevent the reinstallation of vendors at every changes in the source code
 COPY package.json yarn.lock ./
 RUN set -eux; \
@@ -158,7 +157,7 @@ CMD ["yarn", "watch"]
 
 FROM nginx:${NGINX_VERSION}-alpine AS sylius_nginx
 
-COPY docker/nginx/nginx.conf /etc/nginx/
+COPY docker/nginx/conf.d/default.conf /etc/nginx/conf.d/
 
 WORKDIR /srv/sylius
 

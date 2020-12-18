@@ -91,16 +91,16 @@ services:
       - php
       - nodejs # to ensure correct build order
     volumes:
-      - ./public:/srv/sylius/public:ro
+      - .:/srv/sylius:rw,cached
+      - ./public:/srv/sylius/public:rw,cached
       # if you develop on Linux, you may use a bind-mounted host directory instead
-      - ./public/media:/srv/sylius/public/media:ro
+      - ./public/media:/srv/sylius/public/media:rw,cached
       #- public-media:/srv/sylius/public/media:ro,nocopy
     ports:
-      - "80:8080"
+      - "80:80"
 
   mailhog:
 
-    restart: always
     # do not use in production!
     image: mailhog/mailhog:latest
     environment:
