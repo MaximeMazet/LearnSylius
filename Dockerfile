@@ -16,6 +16,8 @@ RUN apk add --no-cache \
 		mariadb-client \
 	;
 
+RUN apk --update add bash wget dpkg-dev
+
 ARG APCU_VERSION=5.1.17
 RUN set -eux; \
 	apk add --no-cache --virtual .build-deps \
@@ -63,6 +65,14 @@ RUN set -eux; \
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY docker/php/php.ini /usr/local/etc/php/php.ini
 COPY docker/php/php-cli.ini /usr/local/etc/php/php-cli.ini
+COPY docker/php/www.conf /usr/local/etc/php-fpm.d/
+
+ARG USER=docker
+ARG UID=1000
+ARG GID=1000
+ARG PW=logipro
+
+RUN adduser ${USER} -D -u ${UID} && echo "${USER}:${PW}"
 
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -120,6 +130,8 @@ RUN set -eux; \
 		python \
 	;
 
+
+
 # prevent the reinstallation of vendors at every changes in the source code
 COPY package.json yarn.lock ./
 RUN set -eux; \
@@ -151,3 +163,21 @@ WORKDIR /srv/sylius
 
 COPY --from=sylius_php /srv/sylius/public public/
 COPY --from=sylius_nodejs /srv/sylius/public public/
+
+RUN apk --update add bash wget dpkg-dev
+
+ARG USER=docker
+ARG UID=1000
+ARG GID=1000
+ARG PW=logipro
+
+RUN adduser ${USER} -D -u ${UID} && echo "${USER}:${PW}"
+
+## add permissions for nginx user
+RUN chown -R ${USER}:${USER} /usr/share/nginx && chmod -R 755 /usr/share/nginx && \
+        chown -R ${USER}:${USER} /var/log/nginx && \
+        chown -R ${USER}:${USER} /etc/nginx/conf.d
+RUN touch /var/run/nginx.pid && \
+        chown -R ${USER}:${USER} /var/run/nginx.pid && \
+        chown -R ${USER}:${USER} /home/docker&& \
+        chown -R ${USER}:${USER} /srv/sylius
